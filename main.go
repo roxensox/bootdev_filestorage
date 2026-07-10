@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/database"
 
@@ -27,6 +29,13 @@ type apiConfig struct {
 
 func main() {
 	godotenv.Load(".env")
+
+	awsConfig, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(os.Getenv("S3_REGION")))
+	if err != nil {
+		log.Fatal("Failed to load AWS Config")
+	}
+
+	s3Client := s3.NewFromConfig(awsConfig)
 
 	pathToDB := os.Getenv("DB_PATH")
 	if pathToDB == "" {
@@ -84,6 +93,7 @@ func main() {
 		platform:         platform,
 		filepathRoot:     filepathRoot,
 		assetsRoot:       assetsRoot,
+		s3Client:         s3Client,
 		s3Bucket:         s3Bucket,
 		s3Region:         s3Region,
 		s3CfDistribution: s3CfDistribution,
